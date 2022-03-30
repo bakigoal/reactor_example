@@ -98,4 +98,20 @@ class ErrorHandlingTest {
         Thread.sleep(100L)
         assertEquals(1L, counter.get())
     }
+
+    @Test
+    fun `do finally`() {
+        class MyBusinessException(msg: String) : RuntimeException(msg)
+
+        val onErrorResume = Flux.just("timeout1")
+            .flatMap { k: String -> callExternalService(k) }
+            .onErrorResume { Flux.error(MyBusinessException("oops...")) }
+            .doFinally { println("finished...") }
+
+        StepVerifier.create(onErrorResume)
+            .expectErrorMatches{
+                it is MyBusinessException && it.message == "oops..."
+            }
+            .verify()
+    }
 }
