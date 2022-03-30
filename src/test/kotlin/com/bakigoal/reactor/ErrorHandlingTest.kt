@@ -74,7 +74,9 @@ class ErrorHandlingTest {
             .onErrorResume { Flux.error(MyBusinessException("oops...")) }
 
         StepVerifier.create(onErrorResume)
-            .expectErrorMessage("oops...")
+            .expectErrorMatches {
+                it is MyBusinessException && it.message == "oops..."
+            }
             .verify()
     }
 
@@ -108,9 +110,7 @@ class ErrorHandlingTest {
             .doFinally { println("finished...") }
 
         StepVerifier.create(onErrorResume)
-            .expectErrorMatches {
-                it is MyBusinessException && it.message == "oops..."
-            }
+            .expectErrorMessage("oops...")
             .verify()
     }
 
