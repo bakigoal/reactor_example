@@ -1,4 +1,4 @@
-package com.bakigoal.reactor.create
+package com.bakigoal.reactor
 
 import org.junit.jupiter.api.Test
 import reactor.core.publisher.Flux
