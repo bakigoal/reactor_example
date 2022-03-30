@@ -125,7 +125,7 @@ class ErrorHandlingTest {
             .elapsed()
 
         StepVerifier.create(retryFlux)
-            .expectNextCount(6)
+            .expectNextCount(6).`as`("Expecting 6 retries")
             .expectError()
             .verify()
     }
