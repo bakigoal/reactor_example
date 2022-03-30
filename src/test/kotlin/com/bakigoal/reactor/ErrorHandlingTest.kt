@@ -3,7 +3,8 @@ package com.bakigoal.reactor
 import org.junit.jupiter.api.Test
 import reactor.core.publisher.Flux
 import reactor.test.StepVerifier
-import java.lang.RuntimeException
+import reactor.util.function.Tuple2
+import java.time.Duration
 import java.util.concurrent.TimeoutException
 import java.util.concurrent.atomic.AtomicLong
 import kotlin.test.assertEquals
@@ -73,7 +74,7 @@ class ErrorHandlingTest {
             .onErrorResume { Flux.error(MyBusinessException("oops...")) }
 
         StepVerifier.create(onErrorResume)
-            .expectErrorMatches{
+            .expectErrorMatches {
                 it is MyBusinessException && it.message == "oops..."
             }
             .verify()
@@ -109,9 +110,25 @@ class ErrorHandlingTest {
             .doFinally { println("finished...") }
 
         StepVerifier.create(onErrorResume)
-            .expectErrorMatches{
+            .expectErrorMatches {
                 it is MyBusinessException && it.message == "oops..."
             }
+            .verify()
+    }
+
+    @Test
+    fun `retry test`() {
+        val retryFlux = Flux.interval(Duration.ofMillis(250))
+            .map { input: Long ->
+                if (input < 3) return@map "tick $input"
+                throw RuntimeException("boom")
+            }
+            .retry(1)
+            .elapsed()
+
+        StepVerifier.create(retryFlux)
+            .expectNextCount(6)
+            .expectError()
             .verify()
     }
 }
